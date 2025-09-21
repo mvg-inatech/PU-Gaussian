@@ -13,7 +13,7 @@ Official implementation of **PU-Gaussian: Point Cloud Upsampling using 3D Gaussi
 
 ### Clone the repository
 ```bash
-git clone https://github.com/mvg-inatech/PU-Gaussian.git
+git clone https://github.com/your-username/PU-Gaussian.git
 cd PU-Gaussian
 ```
 
@@ -27,7 +27,6 @@ pip install -r requirements.txt
 Install the required submodules for point cloud operations:
 
 ```bash
-cd pointnet2_ops_lib && pip install .
 cd ../pointops && pip install .
 cd ../utils/chamfer3d && pip install .
 ```
@@ -75,7 +74,7 @@ python prepare_pugan.py --mode test --input_pts_num 2048 --gt_pts_num 8192 --noi
 #### PU-GAN Dataset Preparation
 
 1. **Download PU-GAN raw meshes**  
-   Download the raw meshes from [here](https://drive.google.com/file/d/1BNqjidBVWP0_MUdMTeGy1wZiR6fqyGmC/view) and extract them to `data/PU-GAN`.
+   Download the raw meshes from [https://drive.google.com/file/d/1BNqjidBVWP0_MUdMTeGy1wZiR6fqyGmC/view](https://drive.google.com/file/d/1BNqjidBVWP0_MUdMTeGy1wZiR6fqyGmC/view) and extract them to `data/PU-GAN`.
 
 2. **Process meshes to point clouds**  
    ```bash
@@ -93,7 +92,7 @@ python prepare_pugan.py --mode test --input_pts_num 2048 --gt_pts_num 8192 --noi
 The PU1K dataset consists of PU-GAN data and meshes from ShapeNet. In order to generate the same dataset as our approach, PU-GAN dataset must be processed first.
 
 1. **Download PU1K raw meshes**  
-   Download the raw meshes from [here](https://drive.google.com/file/d/1tnMjJUeh1e27mCRSNmICwGCQDl20mFae/view?usp=drive_link) and extract them to `data/PU1k_raw_meshes`.
+   Download the raw meshes from [https://drive.google.com/file/d/1tnMjJUeh1e27mCRSNmICwGCQDl20mFae/view?usp=drive_link](https://drive.google.com/file/d/1tnMjJUeh1e27mCRSNmICwGCQDl20mFae/view?usp=drive_link) and extract them to `data/PU1k_raw_meshes`.
 
 2. **Process training set**  
    ```bash
