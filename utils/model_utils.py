@@ -12,10 +12,8 @@ import random
 from torch.autograd import grad
 from einops import rearrange, repeat
 from sklearn.neighbors import NearestNeighbors
-# from utils.chamfer3D.dist_chamfer_3D import chamfer_3DDist
 from utils.Chamfer3D.dist_chamfer_3D import chamfer_3DDist
-# from chamfer3D.dist_chamfer_3D import chamfer_3DDist
-# from visualize_gaussians import density_aware_fps
+
 
 chamfer_dist = chamfer_3DDist()
 

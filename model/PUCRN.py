@@ -5,9 +5,10 @@ import torch.nn.functional as F
 import numpy as np
 from torch import einsum
 import sys 
-sys.path.append('../pointnet2_ops_lib')
-from pointnet2_ops.pointnet2_utils import grouping_operation
+sys.path.append('.')
 from einops import rearrange
+from pointops.functions import pointops 
+grouping_operation = pointops.grouping
 
 
 

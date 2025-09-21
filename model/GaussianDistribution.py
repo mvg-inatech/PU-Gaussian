@@ -87,7 +87,7 @@ class GaussianDistribution(nn.Module):
         if epsilon is None:
             if distribution == 'gaussian':
                 epsilon = torch.randn(batch_size*num_points, num_samples, 3 ).to(self.mean.device)   #  mean = 0, std = 1.6 want to increase the std to 1.6
-                epsilon = redraw_high_values(epsilon, threshold=2)
+                epsilon = redraw_high_values(epsilon, threshold=2.0)
 
                 
             elif distribution == 'uniform':
