@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser.add_argument('--jitter_max', default=0.03, type=float, help="jitter max")
     parser.add_argument('--dataset_dir', default='data/PU1k_raw_meshes', type=str, help='input mesh dir') # change to your path for input pugan meshes
     parser.add_argument('--save_dir', default='data/PU1K', type=str, help='output point cloud dir') # change to your path for saving the results
-    parser.add_argument('--pt', default='train', type=str, help='process train or test set') # 'test' or 'train'
+    parser.add_argument('--mode', default='train', type=str, help='process train or test set') # 'test' or 'train'
     args = parser.parse_args()
 
     test_mesh_paths = ["test/original_meshes"]

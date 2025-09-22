@@ -13,7 +13,7 @@ Official implementation of **PU-Gaussian: Point Cloud Upsampling using 3D Gaussi
 
 ### Clone the repository
 ```bash
-git clone https://github.com/your-username/PU-Gaussian.git
+git clone https://github.com/mvg-inatech/PU-Gaussian.git
 cd PU-Gaussian
 ```
 
@@ -27,8 +27,8 @@ pip install -r requirements.txt
 Install the required submodules for point cloud operations:
 
 ```bash
-cd ../pointops && pip install .
-cd ../utils/chamfer3d && pip install .
+cd pointops && pip install .
+cd utils/chamfer3d && pip install .
 ```
 
 ### Compile the evaluation code for metric calculation (optional)
@@ -78,7 +78,7 @@ python prepare_pugan.py --mode test --input_pts_num 2048 --gt_pts_num 8192 --noi
 
 2. **Process meshes to point clouds**  
    ```bash
-   python prepare_pugan.py --pt train --input_pts_num 2048 --gt_pts_num 40960
+   python prepare_pugan.py --mode train --input_pts_num 2048 --gt_pts_num 40960
    ```
    This will save the point clouds in `data/PU-GAN/train_pointcloud`.
 
@@ -96,7 +96,7 @@ The PU1K dataset consists of PU-GAN data and meshes from ShapeNet. In order to g
 
 2. **Process training set**  
    ```bash
-   python prepare_pu1k.py --pt train --input_pts_num 2048 --gt_pts_num 40960
+   python prepare_pu1k.py --mode train --input_pts_num 2048 --gt_pts_num 40960
    ```
    This will save the point clouds in `data/pu1k/train_pointcloud`.
 
