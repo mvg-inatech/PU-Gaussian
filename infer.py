@@ -208,11 +208,11 @@ def main():
     parser = argparse.ArgumentParser(description='Large Point Cloud Upsampling Inference')
     
     # Input/Output paths
-    parser.add_argument('--inference_input_path', required=True, type=str, 
+    parser.add_argument('--input', required=True, type=str, 
                        help='Input point cloud file (.ply or .pcd)')
-    parser.add_argument('--inference_output_path', default='upsampled.ply', type=str,
+    parser.add_argument('--output', default='upsampled.ply', type=str,
                        help='Output upsampled point cloud file')
-    parser.add_argument('--ckpt', required=True, type=str,
+    parser.add_argument('--model', required=True, type=str,
                        help='Path to trained model checkpoint')
     
     # Patch processing parameters
@@ -238,18 +238,18 @@ def main():
     args = parser.parse_args()
     
     # Validate input file
-    if not os.path.exists(args.inference_input_path):
-        raise FileNotFoundError(f"Input file not found: {args.inference_input_path}")
+    if not os.path.exists(args.input):
+        raise FileNotFoundError(f"Input file not found: {args.input}")
     
     # Validate model file
-    if not os.path.exists(args.ckpt):
-        raise FileNotFoundError(f"Model file not found: {args.ckpt}")
+    if not os.path.exists(args.model):
+        raise FileNotFoundError(f"Model file not found: {args.model}")
     
     # Create output directory if needed
-    os.makedirs(os.path.dirname(os.path.abspath(args.inference_output_path)), exist_ok=True)
+    os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
     
     # Run inference
-    infer_large_pointcloud(args.inference_input_path, args.inference_output_path, args.ckpt, args)
+    infer_large_pointcloud(args.input, args.output, args.model, args)
 
 
 if __name__ == '__main__':
