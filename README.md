@@ -13,7 +13,7 @@ Official implementation of **PU-Gaussian: Point Cloud Upsampling using 3D Gaussi
 
 ### Clone the repository
 ```bash
-git clone https://github.com/mvg-inatech/PU-Gaussian.git
+git clone https://github.com/your-username/PU-Gaussian.git
 cd PU-Gaussian
 ```
 
@@ -27,8 +27,8 @@ pip install -r requirements.txt
 Install the required submodules for point cloud operations:
 
 ```bash
-cd pointops && pip install .
-cd utils/chamfer3d && pip install .
+cd ../pointops && pip install .
+cd ../utils/chamfer3d && pip install .
 ```
 
 ### Compile the evaluation code for metric calculation (optional)
@@ -140,16 +140,16 @@ We have provided the pretrained models in the `pretrained_model` folder, so you 
 * PU-GAN
 ```bash
 # 4X, upsampled point clouds will be saved at ./pretrained_model/pugan/test/4X
-python test.py --dataset pugan --test_input_path ./data/PU-GAN/test_pointcloud/input_2048_4X/input_2048/ --test_gt_path ./data/PU-GAN/test_pointcloud/input_2048_4X/gt_8192/ --ckpt .pretrained_model/pu_gau2_pu1k_Best.pth --save_dir results/PU-GAN/4x --up_rate 4
+python test.py --dataset pugan --test_input_path ./data/PU-GAN/test_pointcloud/input_2048_4X/input_2048/ --test_gt_path ./data/PU-GAN/test_pointcloud/input_2048_4X/gt_8192/ --ckpt pretrained_model/pu_gaussian_pugan_Best.pth --save_dir results/PU-GAN/4x --up_rate 4
 
 # 16X, upsampled point clouds will be saved at ./pretrained_model/pugan/test/16X
-python test.py --dataset pugan --test_input_path ./data/PU-GAN/test_pointcloud/input_2048_16X/input_2048/ --test_gt_path ./data/PU-GAN/test_pointcloud/input_2048_16X/gt_32768/ --ckpt pretrained_model/pu_gau2_pu1k_Best.pth --save_dir results/PU-GAN/16x --up_rate 16
+python test.py --dataset pugan --test_input_path ./data/PU-GAN/test_pointcloud/input_2048_16X/input_2048/ --test_gt_path ./data/PU-GAN/test_pointcloud/input_2048_16X/gt_32768/ --ckpt pretrained_model/pu_gaussian_pugan_Best.pth --save_dir results/PU-GAN/16x --up_rate 16
 ```
 
 * PU1K
 ```bash
 # 4X upsampling
-python test.py --dataset pu1k --test_input_path ./data/PU1K/test/input_2048/input_2048 --test_gt_path ./data/PU1K/test/input_2048/gt_8192 --ckpt ./pretrained_model/pu_gau2_pu1k_Best.pth --save_dir results/PU1k/4x --up_rate 4
+python test.py --dataset pu1k --test_input_path ./data/PU1K/test/input_2048/input_2048 --test_gt_path ./data/PU1K/test/input_2048/gt_8192 --ckpt pretrained_model/pu_gaussian_pu1k_Best.pth --save_dir results/PU1k/4x --up_rate 4
 ```
 
 ### Evaluation

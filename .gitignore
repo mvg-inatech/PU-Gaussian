@@ -64,6 +64,9 @@ events.out.tfevents.*
 *.ninja_log
 *.o
 
+*.pcd
+*.ply
+*.xyz
 # Default .dockerignore for python
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python

@@ -24,7 +24,7 @@ if __name__ == "__main__":
     test_mesh_paths = ["test"]
     training_Mesh_paths = ["simple", "complex", "medium"]
 
-    if args.pt == 'test':
+    if args.mode == 'test':
         args.save_dir = os.path.join(args.dataset_dir, 'test_pointcloud')
         Mesh_paths = []
         for path in test_mesh_paths:
@@ -56,7 +56,7 @@ if __name__ == "__main__":
         os.makedirs(gt_save_dir)
         
 
-    print(f"Processing {args.pt} set, saving to {input_save_dir} and {gt_save_dir}, mesh paths: {Mesh_paths}")
+    print(f"Processing {args.mode} set, saving to {input_save_dir} and {gt_save_dir}, mesh paths: {Mesh_paths}")
     for mesh_path in Mesh_paths:
         mesh_path = glob(os.path.join(mesh_path, '*.off'))
         for i, path in tqdm(enumerate(mesh_path), desc='Processing'):

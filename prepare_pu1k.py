@@ -16,7 +16,7 @@ if __name__ == "__main__":
     parser.add_argument('--gt_pts_num', default=8192, type=int, help='the gt points number')
     parser.add_argument('--noise_level', default=0, type=float, help='the noise level')
     parser.add_argument('--jitter_max', default=0.03, type=float, help="jitter max")
-    parser.add_argument('--dataset_dir', default='data/PU1k_raw_meshes', type=str, help='input mesh dir') # change to your path for input pugan meshes
+    parser.add_argument('--dataset_dir', default='data/PU1k_raw_meshes', type=str, help='input mesh dir') # change to your path for input pu1k meshes
     parser.add_argument('--save_dir', default='data/PU1K', type=str, help='output point cloud dir') # change to your path for saving the results
     parser.add_argument('--mode', default='train', type=str, help='process train or test set') # 'test' or 'train'
     args = parser.parse_args()
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     test_mesh_paths = ["test/original_meshes"]
     training_Mesh_paths = ["train/train_meshes"]
 
-    if args.pt == 'test':
+    if args.mode == 'test':
         args.save_dir = os.path.join(args.dataset_dir, 'test_pointcloud')
         Mesh_paths = []
         for path in test_mesh_paths:
@@ -56,7 +56,7 @@ if __name__ == "__main__":
         os.makedirs(gt_save_dir)
         
 
-    print(f"Processing {args.pt} set, saving to {input_save_dir} and {gt_save_dir}, mesh paths: {Mesh_paths}")
+    print(f"Processing {args.mode} set, saving to {input_save_dir} and {gt_save_dir}, mesh paths: {Mesh_paths}")
     for mesh_path in Mesh_paths:
         mesh_path = glob(os.path.join(mesh_path, '*.off'))
         for i, path in tqdm(enumerate(mesh_path), desc='Processing'):

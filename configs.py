@@ -72,5 +72,12 @@ class args:
     parser.add_argument('--test_input_path', default='./data/PU1K/test/input_2048/', type=str, help='Input point clouds directory') # add the path of the input point clouds test set
     parser.add_argument('--test_gt_path', default='./data/PU1K/test/gt_8192/', type=str, help='Ground truth point clouds directory') # add the path of the gt point clouds test set
     
+    # inference
+    parser.add_argument('--inference_input_path', default='./data/PU1K/test/input_2048/000.ply', type=str, help='Input point cloud file') # add
+    parser.add_argument('--inference_output_path', default='./results/000_upsampled.ply', type=str, help='Output point cloud file') # add
+    parser.add_argument('--patch_size', default=10000, type=int, help='Number of points per patch')
+    parser.add_argument('--overlap_ratio', default=0.1, type=float, help='Overlap ratio between patches (0.0-0.5)')
+    parser.add_argument('--remove_duplicates', action='store_true', help='Remove duplicate points in overlapping regions')
+  
 
     args = parser.parse_args()
