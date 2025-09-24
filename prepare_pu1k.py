@@ -13,10 +13,10 @@ from utils.model_utils import normalize_point_cloud, add_noise
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PU-GAN Test Data Generation Arguments')
     parser.add_argument('--input_pts_num', default=2048, type=int, help='the input points number')
-    parser.add_argument('--gt_pts_num', default=8192, type=int, help='the gt points number')
+    parser.add_argument('--gt_pts_num', default=40960, type=int, help='the gt points number')
     parser.add_argument('--noise_level', default=0, type=float, help='the noise level')
     parser.add_argument('--jitter_max', default=0.03, type=float, help="jitter max")
-    parser.add_argument('--dataset_dir', default='data/PU1k_raw_meshes', type=str, help='input mesh dir') # change to your path for input pu1k meshes
+    parser.add_argument('--dataset_dir', default='data/PU1K_raw_meshes', type=str, help='input mesh dir') # change to your path for input pu1k meshes
     parser.add_argument('--save_dir', default='data/PU1K', type=str, help='output point cloud dir') # change to your path for saving the results
     parser.add_argument('--mode', default='train', type=str, help='process train or test set') # 'test' or 'train'
     args = parser.parse_args()
@@ -25,12 +25,12 @@ if __name__ == "__main__":
     training_Mesh_paths = ["train/train_meshes"]
 
     if args.mode == 'test':
-        args.save_dir = os.path.join(args.dataset_dir, 'test_pointcloud')
+        args.save_dir = os.path.join(args.save_dir, 'test_pointcloud')
         Mesh_paths = []
         for path in test_mesh_paths:
             Mesh_paths.append(os.path.join(args.dataset_dir, path))
     else:
-        args.save_dir = os.path.join(args.dataset_dir, 'train_pointcloud')
+        args.save_dir = os.path.join(args.save_dir, 'train_pointcloud')
         Mesh_paths = []
         for path in training_Mesh_paths:
             Mesh_paths.append(os.path.join(args.dataset_dir, path))

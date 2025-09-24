@@ -37,17 +37,21 @@ class args:
     #### PU1K
      # dataset
     parser.add_argument('--dataset', default='pugan', type=str, help='pu1k or pugan')
-    parser.add_argument('--h5_file_path', default="/data/datasets/pugan_x20.h5", type=str, help='the path of train dataset') # /data/dataset.h5 is pugan our way
+    parser.add_argument('--h5_file_path', default="data/PU-GAN/train/pugan_x20.h5", type=str, help='the path of train dataset') # /data/dataset.h5 is pugan our way
     parser.add_argument('--num_points', default=256, type=int, help='the points number of each input patch')
     parser.add_argument('--skip_rate', default=1, type=int, help='used for dataset')
     parser.add_argument('--use_random_input', default=False, type=bool, help='whether use random sampling for input generation')
     parser.add_argument('--jitter_sigma', type=float, default=0.01, help="jitter augmentation")
     parser.add_argument('--jitter_max', type=float, default=0.03, help="jitter augmentation")
     parser.add_argument('--data_augmentation', default=True, type=bool, help='whether use data augmentation')
+
     parser.add_argument('--test_data', default = '/data/PU-GAN/test_pointcloud/input_256_4X/input_256/', help='test data path')
     parser.add_argument('--gt_path', default = '/data/PU-GAN/test_pointcloud/input_256_4X/gt_1024/', help='test gt data path')
-    parser.add_argument('--pugan_path', default="/data/datasets/pugan_x20.h5", type=str, help='the path of train dataset') # /data/dataset.h5 is pugan our way
-    parser.add_argument('--pu1k_path', default="/data/datasets/pu1k_x20.h5", type=str, help='the path of train dataset') # /data/dataset.h5 is pugan our way
+    
+    # h5 files directory used for training. CHANGE IF NEEDED 
+    parser.add_argument('--pugan_path', default="data/PU-GAN/train/pugan_x20.h5", type=str, help='the path of train dataset') # /data/dataset.h5 is pugan our way
+    parser.add_argument('--pu1k_path', default="data/PU1K/train/pu1k_x20.h5", type=str, help='the path of train dataset') # /data/dataset.h5 is pugan our way
+    
     parser.add_argument('--r', type=int, default=4, help='upsampling rate')
 
 

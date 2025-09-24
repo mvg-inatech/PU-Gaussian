@@ -69,10 +69,8 @@ def process_datset(args):
     # load the directory of the dataset 
     if args.dataset == 'pugan':
         args.input_dir = args.pugan_input_dir
-        args.gt_dir = args.pugan_gt_dir
     elif args.dataset == 'pu1k':
         args.input_dir = args.pu1k_input_dir
-        args.gt_dir = args.pu1k_gt_dir
 
     test_input_path = glob(os.path.join(args.input_dir, '*.xyz'))
     input = []
@@ -98,7 +96,8 @@ def process_datset(args):
 
         pcd_pts_num = input_pcd.shape[-1]
         patch_pts_num = args.num_points 
-        sample_num = 50 #int(pcd_pts_num / patch_pts_num * args.patch_rate)
+        # sample num 200 if pugan and 50 if pu1k
+        sample_num = 200 if args.dataset == 'pugan' else 50
         seed = FPS(input_pcd, sample_num)
         gt_patches = extract_knn_patch(patch_pts_num* args.up_rate, input_pcd, seed)
         input_patches = FPS(gt_patches, patch_pts_num)
@@ -146,7 +145,9 @@ def process_datset(args):
     # save the patches as h5 file
     h5_file_path = args.dataset + '_x' + str(args.up_rate) + '.h5'
     h5_file_path = args.save_dir + '/' + h5_file_path
-
+    # check if save_dir exists
+    if not os.path.exists(args.save_dir):
+        os.makedirs(args.save_dir)
     h5_file = h5py.File(h5_file_path, 'w')
     h5_file.create_dataset(f"poisson_{input.shape[1]}", data=input)
     h5_file.create_dataset(f"poisson_{gt.shape[1]}", data=gt)
@@ -165,13 +166,11 @@ def main():
     parser.add_argument('--dataset', default='pu1k', type=str, help='Dataset: pu1k or pugan')
     parser.add_argument('--r', default=4, type=int, help='Upsampling rate')
     parser.add_argument('--flexible', action='store_true', help='Use flexible upsampling')
-    parser.add_argument('--pugan_input_dir', default='data/PU-GAN/train_pointcloud', type=str, help='Input point clouds directory') # add the path of the input point clouds
-    parser.add_argument('--pugan_gt_dir', default='data/PU-GAN/train_pointcloud', type=str, help='Ground truth point clouds directory') # add the path of the gt point clouds
-    parser.add_argument('--pu1k_input_dir', default='data/PU1K/train_pointcloud', type=str, help='Input point clouds directory') # add the path of the input point clouds
-    parser.add_argument('--pu1k_gt_dir', default='data/PU1K/train_pointcloud', type=str, help='Ground truth point clouds directory') # add the path of the
+    parser.add_argument('--pugan_input_dir', default='data/PU-GAN/train_pointcloud/input_2048_20X/gt_40960', type=str, help='Input point clouds directory') # add the path of the input point clouds
+    parser.add_argument('--pu1k_input_dir', default='data/PU1K/train_pointcloud/input_2048_20X/gt_40960', type=str, help='Input point clouds directory') # add the path of the input point clouds 
     parser.add_argument('--save_dir', default='data/datasets', type=str, help='Save directory for results') # change to your path for saving the resulting dataset
     parser.add_argument('--num_points', default=256, type=int, help="Number of points in each patch")
-    parser.add_argument('--patch_rate', default=6, type=int, help='used for patch generation')
+    parser.add_argument('--patch_rate', default=3, type=int, help='used for patch generation')
     parser.add_argument('--up_rate', default=20, type=int, help='upsampling rate')
     parser.add_argument('--pugan_h5', default='data/PU-GAN/train/pugan_x20.h5', type=str, help='the path of pugan dataset') # add pugan dataset path here if using pu1k. if using pugan dataset only, ignore this argument
 

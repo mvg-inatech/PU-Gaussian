@@ -13,7 +13,7 @@ from utils.model_utils import normalize_point_cloud, add_noise
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PU-GAN Test Data Generation Arguments')
     parser.add_argument('--input_pts_num', default=2048, type=int, help='the input points number')
-    parser.add_argument('--gt_pts_num', default=8192, type=int, help='the gt points number')
+    parser.add_argument('--gt_pts_num', default=40960, type=int, help='the gt points number')
     parser.add_argument('--noise_level', default=0, type=float, help='the noise level')
     parser.add_argument('--jitter_max', default=0.03, type=float, help="jitter max")
     parser.add_argument('--dataset_dir', default='data/PU-GAN', type=str, help='input mesh dir') # change to your path for input pugan meshes

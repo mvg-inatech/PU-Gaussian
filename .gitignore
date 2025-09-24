@@ -63,7 +63,7 @@ events.out.tfevents.*
 *.ninja_deps
 *.ninja_log
 *.o
-
+data/
 *.pcd
 *.ply
 *.xyz
