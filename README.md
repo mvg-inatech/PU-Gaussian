@@ -77,7 +77,7 @@ python test.py --dataset pugan   --test_input_path ./data/PU-GAN/test_pointcloud
 python test.py --dataset pu1k   --test_input_path ./data/PU1K/test/input_2048/input_2048   --test_gt_path ./data/PU1K/test/input_2048/gt_8192   --ckpt pretrained_model/pu_gaussian_pu1k_Best.pth   --save_dir results/PU1K/4x --up_rate 4
 ```
 
-For more information on evaluation, please refer to [ [Grad-PU](https://github.com/yunhe20/Grad-PU) ]
+
 ---
 
 ### Option 2: Full Dataset (for training & reproducing results)
@@ -140,8 +140,10 @@ python train.py --dataset pugan
 # pu1k training
 python train.py --dataset pu1k
 ```
-
 ---
+## Evaluation
+For more information on evaluation, please refer to [ [Grad-PU](https://github.com/yunhe20/Grad-PU) ]
+
 
 ## Citation
 
