@@ -13,7 +13,7 @@ Official implementation of **PU-Gaussian: Point Cloud Upsampling using 3D Gaussi
 
 ### Clone the repository
 ```bash
-git clone https://github.com/your-username/PU-Gaussian.git
+git clone https://github.com/mvg-inatech/PU-Gaussian.git
 cd PU-Gaussian
 ```
 
@@ -31,13 +31,6 @@ cd ../pointops && pip install .
 cd ../utils/chamfer3d && pip install .
 ```
 
-### Compile the evaluation code for metric calculation (optional)
-
-To calculate the CD, HD and P2F metrics, you need to install the CGAL library (please follow the [PU-GAN](https://github.com/liruihui/PU-GAN) repo) and virtual environment of PU-GCN (please follow the [PU-GCN](https://github.com/guochengqian/PU-GCN) repo) first. And then you also need to compile the `evaluation_code` folder.
-```bash
-cd evaluation_code
-bash compile.sh
-```
 
 These commands are tested on an ubuntu system.
 
