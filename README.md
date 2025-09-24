@@ -32,7 +32,7 @@ cd utils/chamfer3d && pip install .
 
 You can directly download the test point clouds and run inference using the models in `pretrained_model`.
 
-- Download the [PU-GAN test meshes](https://drive.google.com/open?id=1BNqjidBVWP0_MUdMTeGy1wZiR6fqyGmC)  
+- Download the [PU-GAN dataset](https://drive.google.com/open?id=1BNqjidBVWP0_MUdMTeGy1wZiR6fqyGmC)  
 - Download the [PU1K dataset](https://drive.google.com/file/d/1oTAx34YNbL6GDwHYL2qqvjmYtTVWcELg/view?usp=drive_link)  
 - Extract them into `data/PU-GAN` and `data/PU1K` respectively.
 
@@ -61,7 +61,7 @@ Simply unzip the dataset into `data/PU1K` with the required folder structure.
 
 ## Testing
 
-Use pretrained models in `pretrained_model/`.
+Use pretrained models in `pretrained_model/` to reproduce our results.
 
 **PU-GAN:**
 ```bash
@@ -77,6 +77,7 @@ python test.py --dataset pugan   --test_input_path ./data/PU-GAN/test_pointcloud
 python test.py --dataset pu1k   --test_input_path ./data/PU1K/test/input_2048/input_2048   --test_gt_path ./data/PU1K/test/input_2048/gt_8192   --ckpt pretrained_model/pu_gaussian_pu1k_Best.pth   --save_dir results/PU1K/4x --up_rate 4
 ```
 
+For more information on evaluation, please refer to [ [Grad-PU](https://github.com/yunhe20/Grad-PU) ]
 ---
 
 ### Option 2: Full Dataset (for training & reproducing results)
@@ -133,7 +134,11 @@ data
 
 To train from scratch, edit `config.py` with the dataset path and run:
 ```bash
-python train.py
+# pugan training
+python train.py --dataset pugan
+
+# pu1k training
+python train.py --dataset pu1k
 ```
 
 ---
@@ -144,8 +149,9 @@ python train.py
 @inproceedings{khater2025puguassian,
   title={PU-Gaussian: Point Cloud Upsampling using 3D Gaussian Representation},
   author={Khater, Mahmoud and Strauss, Mona and von Olshausen, Philipp and Reiterer, Alexander},
-  booktitle={ICCV 2025 e2e3D Workshop},
-  year={2025}
+  booktitle={Proceedings of the IEEE/CVF International Conference on Computer Vision Workshops (ICCVW)},
+  year={2025},
+   note={ICCV 2025 e2e3D Workshop, to appear}
 }
 ```
 *BibTeX will be updated once the paper is officially published.*
