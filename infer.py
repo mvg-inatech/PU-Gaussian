@@ -12,9 +12,10 @@ import gc
 sys.path.append('.')
 
 from model.models import PU_Gaussian
-from utils.model_utils import FPS, normalize_point_cloud
+from utils.model_utils import FPS, normalize_point_cloud, extract_knn_patch
 from configs import args as cnfg
 from train import PointCloudModel
+from tqdm import tqdm
 
 
 def farthest_point_sampling_cpu(points, n_samples):
@@ -52,7 +53,7 @@ def farthest_point_sampling_cpu(points, n_samples):
     return np.array(selected_indices)
 
 
-def extract_patches_knn(points, seed_indices, patch_size=10000):
+def extract_patches_knn_cpu(points, seed_indices, patch_size=10000):
     """
     Extract patches around seed points using k-NN search on CPU.
     
@@ -81,6 +82,23 @@ def extract_patches_knn(points, seed_indices, patch_size=10000):
         
     return patches
 
+def upsampling(args, model, input_pcd):
+    """Upsample point cloud using the model."""
+    pcd_pts_num = input_pcd.shape[-1]
+    patch_pts_num = 256
+    sample_num = int(pcd_pts_num / patch_pts_num * args.patch_rate)
+    seed = FPS(input_pcd, sample_num)
+    patches = extract_knn_patch(patch_pts_num, input_pcd, seed)
+    patches, centroid, furthest_distance = normalize_point_cloud(patches)
+    #model.training_stage = 3
+    # coarse_pts,_, _= model.forward_test(patches)
+    # coarse_pts, _ = model.forward(patches)
+    coarse_pts, _, _ = model.forward_test(patches)
+    coarse_pts = centroid + coarse_pts * furthest_distance
+    coarse_pts = rearrange(coarse_pts, 'b c n -> c (b n)').contiguous()
+    coarse_pts = FPS(coarse_pts.unsqueeze(0), input_pcd.shape[-1] * args.r)
+    return coarse_pts
+
 
 def upsample_patch(model, patch_points, args):
     """
@@ -100,23 +118,14 @@ def upsample_patch(model, patch_points, args):
     patch_tensor = patch_tensor.unsqueeze(0)  # Add batch dimension
     
     # Normalize patch
-    patch_normalized, centroid, furthest_distance = normalize_point_cloud(patch_tensor)
+    upsampled = upsampling(args, model, patch_tensor)
+        
+    # Convert back to numpy
+    upsampled_np = rearrange(upsampled.squeeze(0), 'c n -> n c').contiguous()
+    upsampled_np = upsampled_np.detach().cpu().numpy()
     
-    with torch.no_grad():
-        model.eval()
-        
-        # Forward pass through model
-        upsampled, _, _ = model.forward_test(patch_normalized)
-        
-        # Denormalize
-        upsampled = centroid + upsampled * furthest_distance
-        
-        # Convert back to numpy
-        upsampled_np = rearrange(upsampled.squeeze(0), 'c n -> n c').contiguous()
-        upsampled_np = upsampled_np.detach().cpu().numpy()
-        
     # Clear GPU memory
-    del patch_tensor, patch_normalized, upsampled
+    del patch_tensor, upsampled
     torch.cuda.empty_cache()
     gc.collect()
     
@@ -150,40 +159,43 @@ def infer_large_pointcloud(input_path, output_path, model_path, args):
     
     # Calculate number of patches needed
     patch_size = args.patch_size
-    overlap_ratio = args.overlap_ratio
-    effective_patch_size = int(patch_size * (1 - overlap_ratio))
-    n_patches = max(1, int(np.ceil(N / effective_patch_size)))
-    
+
+    n_patches =  int(N / patch_size * args.patch_rate)  # use 3 for best results
     print(f"Processing {n_patches} patches of size {patch_size}")
+    # check if point coverage is 100%
+
     
     # Select seed points using farthest point sampling
     print("Selecting seed points...")
-    seed_indices = farthest_point_sampling_cpu(points, n_patches)
+    if N > patch_size:
+        seed_indices = farthest_point_sampling_cpu(points, n_patches)
     
-    # Extract patches around seed points
-    print("Extracting patches...")
-    patches = extract_patches_knn(points, seed_indices, patch_size)
-    
+        # Extract patches around seed points
+        print("Extracting patches...")
+        patches = extract_patches_knn_cpu(points, seed_indices, patch_size)
+    else:
+        patches = [points]
+        print("Point cloud smaller than patch size, processing as single patch.")
+
     # Initialize output point cloud
     upsampled_pcd = o3d.geometry.PointCloud()
     all_upsampled_points = []
     
     # Process each patch
     print("Processing patches...")
-    for i, patch in enumerate(patches):
-        print(f"Processing patch {i+1}/{len(patches)} ({len(patch)} points)")
-        
+    for i, patch in enumerate(tqdm(patches, desc="Processing patches", unit="patch")):
         # Upsample the patch
         upsampled_patch = upsample_patch(model, patch, args)
         all_upsampled_points.append(upsampled_patch)
-        
-        # Print progress
-        if (i + 1) % 10 == 0:
-            print(f"Completed {i+1}/{len(patches)} patches")
     
     # Aggregate all upsampled points
     print("Aggregating results...")
     all_points = np.vstack(all_upsampled_points)
+    # down sample to original size * r
+    pc = o3d.geometry.PointCloud()
+    pc.points = o3d.utility.Vector3dVector(all_points)
+    all_points = o3d.geometry.uniform_down_sample(pc, int(len(all_points)/(N*args.r))).points
+    
     
     # Remove duplicates if there's overlap (simple approach: remove points too close together)
     if args.remove_duplicates:
@@ -208,18 +220,16 @@ def main():
     parser = argparse.ArgumentParser(description='Large Point Cloud Upsampling Inference')
     
     # Input/Output paths
-    parser.add_argument('--input', required=True, type=str, 
-                       help='Input point cloud file (.ply or .pcd)')
-    parser.add_argument('--output', default='upsampled.ply', type=str,
-                       help='Output upsampled point cloud file')
-    parser.add_argument('--model', required=True, type=str,
-                       help='Path to trained model checkpoint')
+    parser.add_argument('--inference_input_path', required=True, type=str, help='Input point cloud file') # add
+    parser.add_argument('--inference_output_path', default='upsampled.ply', type=str, help='Output point cloud file') # add
+    parser.add_argument('--ckpt',required=True, help='model to restore from')
+
     
     # Patch processing parameters
     parser.add_argument('--patch_size', default=10000, type=int,
                        help='Number of points per patch')
-    parser.add_argument('--overlap_ratio', default=0.1, type=float,
-                       help='Overlap ratio between patches (0.0-0.5)')
+    parser.add_argument('--patch_rate', default=3, type=int, help='Overlap rate') # use 3 for best results
+
     parser.add_argument('--remove_duplicates', action='store_true',
                        help='Remove duplicate points in overlapping regions')
     parser.add_argument('--duplicate_threshold', default=0.001, type=float,
@@ -238,18 +248,18 @@ def main():
     args = parser.parse_args()
     
     # Validate input file
-    if not os.path.exists(args.input):
-        raise FileNotFoundError(f"Input file not found: {args.input}")
+    if not os.path.exists(args.inference_input_path):
+        raise FileNotFoundError(f"Input file not found: {args.inference_input_path}")
     
     # Validate model file
-    if not os.path.exists(args.model):
-        raise FileNotFoundError(f"Model file not found: {args.model}")
+    if not os.path.exists(args.ckpt):
+        raise FileNotFoundError(f"Model file not found: {args.ckpt}")
     
     # Create output directory if needed
-    os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
+    os.makedirs(os.path.dirname(os.path.abspath(args.inference_output_path)), exist_ok=True)
     
     # Run inference
-    infer_large_pointcloud(args.input, args.output, args.model, args)
+    infer_large_pointcloud(args.inference_input_path, args.inference_output_path, args.ckpt, args)
 
 
 if __name__ == '__main__':
