@@ -18,68 +18,83 @@ from train import PointCloudModel
 from tqdm import tqdm
 
 
-def farthest_point_sampling_cpu(points, n_samples):
-    """
-    Farthest point sampling on CPU using numpy.
-    
-    Args:
-        points: numpy array of shape (N, 3)
-        n_samples: number of samples to select
-    
-    Returns:
-        indices: numpy array of selected point indices
-    """
-    N = points.shape[0]
-    if n_samples >= N:
-        return np.arange(N)
-    
-    selected_indices = []
-    distances = np.full(N, np.inf)
-    
-    # Start with random point
-    current_idx = np.random.randint(0, N)
-    selected_indices.append(current_idx)
-    
-    for i in range(1, n_samples):
-        # Update distances to the last selected point
-        last_point = points[current_idx]
-        dist_to_last = np.sum((points - last_point) ** 2, axis=1)
-        distances = np.minimum(distances, dist_to_last)
-        
-        # Select point with maximum distance
-        current_idx = np.argmax(distances)
-        selected_indices.append(current_idx)
-        
-    return np.array(selected_indices)
 
+def partition_point_cloud(points, patch_size):
+    """
+    Partition a 3D point cloud into axis-aligned grid cells.
 
-def extract_patches_knn_cpu(points, seed_indices, patch_size=10000):
-    """
-    Extract patches around seed points using k-NN search on CPU.
-    
     Args:
-        points: numpy array of shape (N, 3) - full point cloud
-        seed_indices: numpy array of seed point indices
-        patch_size: number of points per patch
-    
+        points (np.ndarray): Input point cloud of shape (N, 3).
+        patch_size (int): Target number of points per patch.
+
     Returns:
-        patches: list of numpy arrays, each of shape (patch_size, 3)
+        list[np.ndarray]: List of patches, each containing points as a NumPy array.
     """
-    # Use sklearn's NearestNeighbors for efficient k-NN search
-    nbrs = NearestNeighbors(n_neighbors=min(patch_size, len(points)), algorithm='auto').fit(points)
+    from sklearn.cluster import KMeans
+
+    # Step 1: Compute global bounding box and density
+    min_xyz = points.min(axis=0)
+    max_xyz = points.max(axis=0)
+    aabb_volume = np.prod(max_xyz - min_xyz)
+    density = len(points) / aabb_volume
+
+    # Step 2: Calculate cell size based on target patch size
+    cell_volume = patch_size / density
+    cell_size = cell_volume ** (1 / 3)
+
+    # Step 3: Assign points to grid cells
+    grid_indices = np.floor((points - min_xyz) / cell_size).astype(int)
+    grid = {}
+    for idx, grid_idx in enumerate(map(tuple, grid_indices)):
+        if grid_idx not in grid:
+            grid[grid_idx] = []
+        grid[grid_idx].append(idx)
     
+    for cell_indices in list(grid.values()):
+         if len(cell_indices) < patch_size // 1.5:
+            # Merge small cells with the nearest neighbor
+            cell_center = np.mean(points[cell_indices], axis=0)
+            nearest_cell = None
+            min_distance = float('inf')
+            
+            # Track parsed cells
+            parsed_cells = set()
+            
+            for key, indices in grid.items():
+                if key in parsed_cells or key == tuple(grid_indices[cell_indices[0]]):
+                    continue
+                other_cell_center = np.mean(points[indices], axis=0)
+                distance = np.linalg.norm(cell_center - other_cell_center)
+                if distance < min_distance:
+                    min_distance = distance
+                    nearest_cell = key
+            
+            if nearest_cell is not None:
+                grid[nearest_cell].extend(cell_indices)
+                parsed_cells.add(nearest_cell)  # Mark the nearest cell as parsed
+                del grid[tuple(grid_indices[cell_indices[0]])]  # Remove the small cell
+    
+
+    # Step 4: Process cells to ensure patch consistency
     patches = []
-    for seed_idx in seed_indices:
-        seed_point = points[seed_idx:seed_idx+1]  # Shape (1, 3)
-        
-        # Find k nearest neighbors
-        distances, indices = nbrs.kneighbors(seed_point)
-        patch_indices = indices[0]  # Remove batch dimension
-        
-        # Extract patch points
-        patch = points[patch_indices]
-        patches.append(patch)
-        
+    for cell_indices in list(grid.values()):
+        if len(cell_indices) > 1.5 * patch_size:
+            # Split large cells using KMeans
+            num_subclusters = max(1, len(cell_indices) // patch_size + 1)
+            kmeans = KMeans(n_clusters=num_subclusters, random_state=0).fit(points[cell_indices])
+            sub_labels = kmeans.labels_
+            for sub_id in range(num_subclusters):
+                sub_cluster_indices = np.array(cell_indices)[sub_labels == sub_id]
+                patches.append(points[sub_cluster_indices])
+        else:
+            # Add medium-sized cells directly as patches
+            patches.append(points[cell_indices])
+
+    # Step 5: Ensure all points are included exactly once
+    total_points = sum(len(patch) for patch in patches)
+    print(f"Total points in patches: {total_points}, Original points: {len(points)}")
+    assert total_points == len(points), "Mismatch in total points after partitioning. len"
+
     return patches
 
 def upsampling(args, model, input_pcd):
@@ -90,9 +105,7 @@ def upsampling(args, model, input_pcd):
     seed = FPS(input_pcd, sample_num)
     patches = extract_knn_patch(patch_pts_num, input_pcd, seed)
     patches, centroid, furthest_distance = normalize_point_cloud(patches)
-    #model.training_stage = 3
-    # coarse_pts,_, _= model.forward_test(patches)
-    # coarse_pts, _ = model.forward(patches)
+    
     coarse_pts, _, _ = model.forward_test(patches)
     coarse_pts = centroid + coarse_pts * furthest_distance
     coarse_pts = rearrange(coarse_pts, 'b c n -> c (b n)').contiguous()
@@ -160,19 +173,10 @@ def infer_large_pointcloud(input_path, output_path, model_path, args):
     # Calculate number of patches needed
     patch_size = args.patch_size
 
-    n_patches =  int(N / patch_size * args.patch_rate)  # use 3 for best results
-    print(f"Processing {n_patches} patches of size {patch_size}")
-    # check if point coverage is 100%
-
-    
-    # Select seed points using farthest point sampling
-    print("Selecting seed points...")
     if N > patch_size:
-        seed_indices = farthest_point_sampling_cpu(points, n_patches)
-    
-        # Extract patches around seed points
-        print("Extracting patches...")
-        patches = extract_patches_knn_cpu(points, seed_indices, patch_size)
+        print("partitioning point cloud into patches...")
+        patches = partition_point_cloud(points, patch_size)
+        print(f" patch size {len(patches)}")
     else:
         patches = [points]
         print("Point cloud smaller than patch size, processing as single patch.")
@@ -191,10 +195,6 @@ def infer_large_pointcloud(input_path, output_path, model_path, args):
     # Aggregate all upsampled points
     print("Aggregating results...")
     all_points = np.vstack(all_upsampled_points)
-    # down sample to original size * r
-    pc = o3d.geometry.PointCloud()
-    pc.points = o3d.utility.Vector3dVector(all_points)
-    all_points = o3d.geometry.uniform_down_sample(pc, int(len(all_points)/(N*args.r))).points
     
     
     # Remove duplicates if there's overlap (simple approach: remove points too close together)
@@ -207,6 +207,15 @@ def infer_large_pointcloud(input_path, output_path, model_path, args):
     
     # Create final point cloud
     upsampled_pcd.points = o3d.utility.Vector3dVector(all_points)
+    # take the color from the original point cloud nearest neighbor
+    if len(pcd.colors) > 0 and args.return_color:
+        print("Transferring colors from original point cloud...")
+        nbrs = NearestNeighbors(n_neighbors=1, algorithm='auto').fit(np.asarray(pcd.points))
+        distances, indices = nbrs.kneighbors(all_points)
+        colors = np.asarray(pcd.colors)[indices.flatten()]
+        upsampled_pcd.colors = o3d.utility.Vector3dVector(colors)
+        # colors added 
+        print("Colors transferred.")
     
     # Save result
     print(f"Saving upsampled point cloud to: {output_path}")
@@ -234,6 +243,8 @@ def main():
                        help='Remove duplicate points in overlapping regions')
     parser.add_argument('--duplicate_threshold', default=0.001, type=float,
                        help='Distance threshold for duplicate removal')
+    parser.add_argument('--return_color', action='store_true',
+                       help='Return colors from original point cloud if available')
     
     # Model parameters (should match training config)
     parser.add_argument('--num_samples', default=6, type=int,
@@ -244,7 +255,7 @@ def main():
                        help='Training stage for inference')
     parser.add_argument('--r', default=4, type=int,
                        help='Upsampling ratio')
-    
+
     args = parser.parse_args()
     
     # Validate input file

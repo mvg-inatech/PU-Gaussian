@@ -25,6 +25,31 @@ cd utils/chamfer3d && pip install .
 ```
 
 ---
+## Quick Start: Point Cloud Upsampling
+
+If you are only interested in upsampling your point cloud with our pretrained model. 
+
+Upsample a point cloud with the pretrained model using a single command:
+
+```bash
+python infer.py \
+  --inference_input_path path_to_your_pc.pcd \
+  --ckpt pretrained_model/pu_gaussian_pugan_Best.pth \
+  --return_color \
+  --patch_size 10000
+```
+Quick Tips:
+
+The script can handle point clouds of any size, limited only by your system RAM.
+
+- Adjust --patch_size to fit your GPU memory.
+
+- Add --return_color to preserve input colors.
+
+- Add --remove_duplicates to eliminate duplicate points. (not necessary in most cases)
+
+- upsampling rate: 4×
+
 
 ## Data Preparation
 

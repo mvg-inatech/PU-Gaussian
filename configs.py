@@ -82,6 +82,7 @@ class args:
     parser.add_argument('--patch_size', default=10000, type=int, help='Number of points per patch')
     parser.add_argument('--patch_rate', default=3, type=int, help='Overlap ratio between patches (0.0-0.5)')
     parser.add_argument('--remove_duplicates', action='store_true', help='Remove duplicate points in overlapping regions')
+    parser.add_argument('--return_color', action='store_true',help='Return colors from original point cloud if available')
   
 
     args = parser.parse_args()
