@@ -34,6 +34,7 @@ Upsample a point cloud with the pretrained model using a single command:
 ```bash
 python infer.py \
   --inference_input_path path_to_your_pc.pcd \
+  --inference_output_path path_to_your_upsampled_pc.ply \
   --ckpt pretrained_model/pu_gaussian_pugan_Best.pth \
   --return_color \
   --patch_size 10000
