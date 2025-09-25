@@ -214,8 +214,15 @@ def infer_large_pointcloud(input_path, output_path, model_path, args):
         distances, indices = nbrs.kneighbors(all_points)
         colors = np.asarray(pcd.colors)[indices.flatten()]
         upsampled_pcd.colors = o3d.utility.Vector3dVector(colors)
+        # if you want to add semantic labels as well, you can do similar process here for labels 
+        # labels = np.asarray(pcd.labels)[indices.flatten()] # assuming pcd has labels attribute.
         # colors added 
         print("Colors transferred.")
+    
+    if args.add_original:
+        upsampled_pcd += pcd
+        upsampled_pcd = upsampled_pcd.voxel_down_sample(voxel_size= args.duplicate_threshold / 2)
+        print("Original points added to upsampled point cloud.")
     
     # Save result
     print(f"Saving upsampled point cloud to: {output_path}")
@@ -255,6 +262,8 @@ def main():
                        help='Training stage for inference')
     parser.add_argument('--r', default=4, type=int,
                        help='Upsampling ratio')
+    parser.add_argument('--add_original', action='store_true',
+                       help='Add original points to upsampled output')
 
     args = parser.parse_args()
     

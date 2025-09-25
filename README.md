@@ -51,6 +51,8 @@ The script can handle point clouds of any size, limited only by your system RAM.
 
 - upsampling rate: 4×
 
+- Add --add_original to add original points to upsampled output. (This will change the upsampling rate)
+
 
 ## Data Preparation
 
