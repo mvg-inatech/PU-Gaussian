@@ -106,7 +106,9 @@ def upsampling(args, model, input_pcd):
     patches = extract_knn_patch(patch_pts_num, input_pcd, seed)
     patches, centroid, furthest_distance = normalize_point_cloud(patches)
     
-    coarse_pts, _, _ = model.forward_test(patches)
+    with torch.no_grad():
+        coarse_pts, _, _ = model.forward_test(patches)
+        
     coarse_pts = centroid + coarse_pts * furthest_distance
     coarse_pts = rearrange(coarse_pts, 'b c n -> c (b n)').contiguous()
     coarse_pts = FPS(coarse_pts.unsqueeze(0), input_pcd.shape[-1] * args.r)
