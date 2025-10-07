@@ -16,6 +16,7 @@
 /.devcontainer/
 /.vscode/
 /build/
+*.pcd
 
 *Grad-PU/cmake_folder
 *Grad-PU/build_folder
