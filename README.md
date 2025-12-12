@@ -175,7 +175,8 @@ For more information on evaluation, please refer to [ [Grad-PU](https://github.c
 
 ## Citation
 
-```@inproceedings{khater2025pu,
+```
+@inproceedings{khater2025pu,
   title={PU-Gaussian: Point Cloud Upsampling using 3D Gaussian Representation},
   author={Khater, Mahmoud and Strauss, Mona and Von Olshausen, Philipp and Reiterer, Alexander},
   booktitle={Proceedings of the IEEE/CVF International Conference on Computer Vision},
@@ -183,7 +184,7 @@ For more information on evaluation, please refer to [ [Grad-PU](https://github.c
   year={2025}
 }
 ```
-*BibTeX will be updated once the paper is officially published.*
+
 
 ---
 
